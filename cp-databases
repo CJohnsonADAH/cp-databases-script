@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# cp-databases: copy snapshots of key databases
+#
+# @version 2019.0820
+
+SCRIPTPATH=$(which $0) && [[ -L "${SCRIPTPATH}" ]] && SCRIPTPATH=$(readlink -f "${SCRIPTPATH}")
+SCRIPTNAME=$(basename "${SCRIPTPATH}")
+SCRIPTDIR=$(dirname "${SCRIPTPATH}")
+PATH="${SCRIPTDIR}:${PATH}"
+
+DATABASESDIR=$(readlink -f ~/Documents/Databases)
+SNAPSHOTSDIR=//adahfs3/Data/ADAHusers/CJohnson/GRINV_Folderdb
+
+if [[ -z "$1" ]] ; then
+
+	echo "[${SCRIPTNAME}] DATABASES: ${DATABASESDIR}"
+
+	VERSIONDIR=$(date +"%Y-%m-%d-%H%M%S")
+	DEST="${SNAPSHOTSDIR}/${VERSIONDIR}"
+	mkdir --parents --verbose "${DEST}"
+	find -L "${DATABASESDIR}" -type f -print0 | xargs -0 "${SCRIPTPATH}" "${DEST}"
+	DESTDOS=$(cygpath --windows "${DEST}")
+	attrib +R "${DESTDOS}"
+	
+else
+	DESTDIR="$1" ; shift
+	while [[ ! -z "$1" ]] ; do
+		DB="$1" ; shift
+
+		if [[ "${DB}" =~ [.]lnk$ ]] ; then
+			SRC=$(readshortcut --unix "${DB}")
+		elif [[ -L "${DB}" ]] ; then
+			SRC=$(readlink -f "${DB}")
+		else
+			SRC=$(which "${DB}")
+		fi
+		SRCFILE=$(basename "${SRC}")
+		
+		DEST="${DESTDIR}/${SRCFILE}"
+		DESTDOS=$(cygpath --windows "${DEST}")
+		cp --verbose "${SRC}" "${DEST}"
+		
+		attrib +R "${DESTDOS}"
+	done
+fi
