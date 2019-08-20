@@ -10,7 +10,7 @@ SCRIPTDIR=$(dirname "${SCRIPTPATH}")
 PATH="${SCRIPTDIR}:${PATH}"
 
 DATABASESDIR=$(readlink -f ~/Documents/Databases)
-SNAPSHOTSDIR=//adahfs3/Data/ADAHusers/CJohnson/GRINV_Folderdb
+SNAPSHOTSDIR=$(grep --perl-regexp '^SNAPSHOTSDIR\t' "${SCRIPTDIR}/props.tsv" | cut --field=2)
 
 if [[ -z "$1" ]] ; then
 
